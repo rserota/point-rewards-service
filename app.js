@@ -62,10 +62,54 @@ app.post('/points/spend', (req, res)=>{
             else if ( a.timestamp < b.timestamp ) { return -1 }
             else { return 0 }
         })
-        console.log('points? ', points)
 
+        const balance = getBalance(points)
+        const payers = {}
+        for ( let transaction of points ) {
+            console.log('=-=-=-=-=-=-=')
+            console.log('requested spend', requestedSpendAmount)
+            console.log('trns', transaction)
+            console.log('balance? ', balance)
+            let spentAmount
+            // this transaction does not have enough points to satisfy the request
+            if ( transaction.remainingPoints < requestedSpendAmount ) {
+                
+                // this payer has enough points to use this entire transaction (not too many negative transactions later)
+                if ( balance[transaction.payer] >= transaction.remainingPoints ) {
+                    spentAmount = transaction.remainingPoints
+                    requestedSpendAmount -= spentAmount
+                    balance[transaction.payer] -= spentAmount
+                    transaction.remainingPoints = 0
+                }
+                else {
+                    spentAmount = balance[transaction.payer]
+                    requestedSpendAmount -= spentAmount
+                    balance[transaction.payer] -= spentAmount
+                    transaction.remainingPoints -= spentAmount
+
+                }
+            }
+            // this is the last transaction we'll take points from to satisfy the request
+            else if ( transaction.remainingPoints > requestedSpendAmount ) {
+                spentAmount = requestedSpendAmount
+                transaction.remainingPoints -= spentAmount
+                requestedSpendAmount = 0
+            }
+
+            console.log('spent', spentAmount)
+            if ( spentAmount ) {
+                if ( !payers[transaction.payer] ) {
+                    payers[transaction.payer] = {payer: transaction.payer, points: -spentAmount}
+                }
+                else { payers[transaction.payer].points -= spentAmount }
+            }
+
+            console.log('spent amount? ', spentAmount)
+            console.log('payers? ', payers)
+        }
+
+        res.send(payers)
     }
-    res.send('?')
 })
 
 app.listen(8080, ()=>{

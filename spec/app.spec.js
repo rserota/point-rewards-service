@@ -48,8 +48,6 @@ describe('Balance calculation', ()=>{
 describe('Spending points', ()=>{
     describe('with valid inputs', ()=>{
         it('should return the list of payers whose points were spent', async ()=>{
-            const getResponse = await axios.get(`${baseUrl}/points/balance`)
-            console.log(getResponse.data)
             await Promise.all([
                 axios.post(`${baseUrl}/points`,{ "payer": "DANNON", "points": 300, "timestamp": "2022-10-31T10:00:00Z" }),
                 axios.post(`${baseUrl}/points`, { "payer": "DANNON", "points": -200, "timestamp": "2022-10-31T15:00:00Z" }),
@@ -59,7 +57,7 @@ describe('Spending points', ()=>{
             ])
 
             const spendResponse = await axios.post(`${baseUrl}/points/spend`, {points: 5000})
-            console.log('spend response', spendResponse)
+            console.log('spend response', spendResponse.data)
         })
     })
 })
