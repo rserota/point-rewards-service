@@ -2,29 +2,8 @@ const express = require('express')
 const app = express()
 app.use(express.json())
 const points = []
+const {getBalance, getTotalPoints} = require('./utils')
 
-const getBalance = (points)=>{
-    const balance = { }
-    for ( let transaction of points ) {
-        if ( !balance[transaction.payer] )  {
-            balance[transaction.payer] = transaction.remainingPoints
-        }
-        else {
-            balance[transaction.payer] += transaction.remainingPoints
-        }
-    }
-
-    return balance
-}
-
-const getTotalPoints = (points)=>{
-    let totalPoints = 0
-    const balance = getBalance(points)
-    for (let payer in balance){
-        totalPoints += balance[payer]
-    }
-    return totalPoints
-}
 
 
 app.post('/points', (req, res)=>{
@@ -38,15 +17,15 @@ app.post('/points', (req, res)=>{
         points.push({
             ...req.body,
             remainingPoints: req.body.points,
-        });
-        res.status(201).send();
+        })
+        res.status(201).send()
     }
 })
 
 // for setup before tests
 app.delete('/points', (req, res)=>{
-    points.length = 0;
-    res.status(204).send();
+    points.length = 0
+    res.status(204).send()
 })
 
 // for test assertions
@@ -92,7 +71,6 @@ app.post('/points/spend', (req, res)=>{
                     requestedSpendAmount -= spentAmount
                     balance[transaction.payer] -= spentAmount
                     transaction.remainingPoints -= spentAmount
-
                 }
             }
             // this is the last transaction we'll take points from to satisfy the request
@@ -108,12 +86,9 @@ app.post('/points/spend', (req, res)=>{
                 }
                 else { payers[transaction.payer].points -= spentAmount }
             }
-
         }
 
-        const output = Object.values(payers).sort((a,b)=>{
-            return a.points - b.points
-        })
+        const output = Object.values(payers).sort((a,b)=>{ return a.points - b.points })
         res.send(output)
     }
 })
