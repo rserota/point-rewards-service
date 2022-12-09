@@ -15,7 +15,7 @@ describe('Transaction creation', ()=>{
             expect(postResponse.status).toBe(201)
 
             const getResponse = await axios.get(`${baseUrl}/points`)
-            // console.log(getResponse.data)
+            console.log(getResponse.data)
         })
     })
 
