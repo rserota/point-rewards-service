@@ -1,7 +1,7 @@
-const express = require('express');
-const app = express();
+const express = require('express')
+const app = express()
 app.use(express.json())
-const points = [];
+const points = []
 
 const getBalance = (points)=>{
     const balance = { }
@@ -28,10 +28,19 @@ const getTotalPoints = (points)=>{
 
 
 app.post('/points', (req, res)=>{
-    req.body.remainingPoints = req.body.points
-    points.push(req.body);
-
-    res.status(201).send();
+    if ( typeof req.body.points !== 'number' ) {
+        res.status(422).send({error: "Points must be a positive number."})
+    }
+    else if ( (getBalance(points)[req.body.payer] || 0) + req.body.points < 0 ) {
+        res.status(409).send({error: "Cannot accept transactions that result in a negative balance for a payer."})
+    }
+    else {
+        points.push({
+            ...req.body,
+            remainingPoints: req.body.points,
+        });
+        res.status(201).send();
+    }
 })
 
 // for setup before tests
@@ -54,7 +63,7 @@ app.post('/points/spend', (req, res)=>{
     let requestedSpendAmount = req.body.points    
     const totalPoints = getTotalPoints(points)
     if ( requestedSpendAmount > totalPoints ) {
-
+        res.status(409).send({error: "Cannot spend more than the total account balance."})
     }
     else { // they have enough points
         // points must be sorted by timestamp so that they're spent in the correct order
@@ -67,10 +76,6 @@ app.post('/points/spend', (req, res)=>{
         const balance = getBalance(points)
         const payers = {}
         for ( let transaction of points ) {
-            console.log('=-=-=-=-=-=-=')
-            console.log('requested spend', requestedSpendAmount)
-            console.log('trns', transaction)
-            console.log('balance? ', balance)
             let spentAmount
             // this transaction does not have enough points to satisfy the request
             if ( transaction.remainingPoints < requestedSpendAmount ) {
@@ -97,7 +102,6 @@ app.post('/points/spend', (req, res)=>{
                 requestedSpendAmount = 0
             }
 
-            console.log('spent', spentAmount)
             if ( spentAmount ) {
                 if ( !payers[transaction.payer] ) {
                     payers[transaction.payer] = {payer: transaction.payer, points: -spentAmount}
@@ -105,8 +109,6 @@ app.post('/points/spend', (req, res)=>{
                 else { payers[transaction.payer].points -= spentAmount }
             }
 
-            console.log('spent amount? ', spentAmount)
-            console.log('payers? ', payers)
         }
 
         const output = Object.values(payers).sort((a,b)=>{

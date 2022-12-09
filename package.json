@@ -2,11 +2,12 @@
   "name": "fetch-project",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "test": "clear; jasmine"
+    "test": "clear; jasmine",
+    "start": "node app.js"
   },
-  "author": "",
+  "author": "Raphael Serota",
   "license": "ISC",
   "dependencies": {
     "axios": "^1.2.1",
