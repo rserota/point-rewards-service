@@ -57,7 +57,14 @@ describe('Spending points', ()=>{
             ])
 
             const spendResponse = await axios.post(`${baseUrl}/points/spend`, {points: 5000})
-            console.log('spend response', spendResponse.data)
+            expect(spendResponse.data).toEqual([
+                { payer: 'MILLER COORS', points: -4700 },
+                { payer: 'UNILEVER', points: -200 },
+                { payer: 'DANNON', points: -100 }
+            ])
+
+            const balanceResponse = await axios.get(`${baseUrl}/points/balance`)
+            expect(balanceResponse.data).toEqual({ DANNON: 1000, UNILEVER: 0, 'MILLER COORS': 5300 })
         })
     })
 })

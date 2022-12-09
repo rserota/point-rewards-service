@@ -13,6 +13,7 @@ const getBalance = (points)=>{
             balance[transaction.payer] += transaction.remainingPoints
         }
     }
+
     return balance
 }
 
@@ -108,7 +109,10 @@ app.post('/points/spend', (req, res)=>{
             console.log('payers? ', payers)
         }
 
-        res.send(payers)
+        const output = Object.values(payers).sort((a,b)=>{
+            return a.points - b.points
+        })
+        res.send(output)
     }
 })
 
